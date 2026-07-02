@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Cat Feeder",
+    "slug": "catfeeder-ui",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "catfeeder",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
