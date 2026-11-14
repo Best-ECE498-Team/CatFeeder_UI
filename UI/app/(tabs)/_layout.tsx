@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, Text } from "react-native";
 
 const icons = {
   home: require("../../assets/images/Home_Icon.png"),
@@ -58,6 +58,22 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="history"
+        options={{
+          title: "History",
+          tabBarIcon: ({ focused }) => (
+            <Text
+              style={[
+                styles.historyIcon,
+                focused ? styles.activeIcon : styles.inactiveIcon,
+              ]}
+            >
+              H
+            </Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
@@ -92,5 +108,16 @@ const styles = StyleSheet.create({
   },
   inactiveIcon: {
     opacity: 0.55,
+  },
+  historyIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#e7f4f2",
+    textAlign: "center",
+    textAlignVertical: "center",
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#2f7f79",
   },
 });
