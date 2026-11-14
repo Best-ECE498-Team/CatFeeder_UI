@@ -7,7 +7,9 @@
     "scheme": "catfeeder",
     "userInterfaceStyle": "automatic",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-status-bar",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

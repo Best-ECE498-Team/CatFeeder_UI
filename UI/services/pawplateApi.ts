@@ -17,7 +17,9 @@ export type FoodClass =
   | "empty_bowl"
   | "pate_wet_food_bowl"
   | "stew_wet_food_bowl"
-  | "milk_bowl";
+  | "milk_bowl"
+  | "unclear"
+  | "unsupported";
 
 export type FoodAnalysis = {
   foodClass: FoodClass;
@@ -64,7 +66,7 @@ export class PawPlateApiError extends Error {
 }
 
 type BackendFoodAnalysis = {
-  food_class?: FoodClass;
+  food_class?: string;
   confidence?: string;
   uncertain?: boolean;
   notes?: string;
@@ -97,9 +99,7 @@ export async function getPawPlateStatus(): Promise<PawPlateStatus> {
   return requestJson<PawPlateStatus>("/status");
 }
 
-export async function detectFood(
-  bowlId = 1
-): Promise<FoodDetectionResponse> {
+export async function detectFood(bowlId = 1): Promise<FoodDetectionResponse> {
   const response = await requestJson<BackendFoodDetectionResponse>(
     "/detect-food",
     {
@@ -240,7 +240,7 @@ function parseFoodDetectionResponse(
     );
   }
 
-  const foodClass = detection.analysis.food_class;
+  const foodClass = normalizeFoodClass(detection.analysis.food_class);
 
   return {
     success: Boolean(detection.success),
@@ -254,7 +254,10 @@ function parseFoodDetectionResponse(
     analysis: {
       foodClass,
       confidence: detection.analysis.confidence ?? "unknown",
-      uncertain: Boolean(detection.analysis.uncertain),
+      uncertain:
+        Boolean(detection.analysis.uncertain) ||
+        foodClass === "unclear" ||
+        foodClass === "unsupported",
       notes: detection.analysis.notes ?? "",
       displayName:
         detection.analysis.display_name || getFoodClassDisplayName(foodClass),
@@ -287,17 +290,63 @@ function hasFoodDetectionData(
   return Boolean(value && typeof value === "object" && "analysis" in value);
 }
 
-function getFoodClassDisplayName(foodClass: FoodClass) {
+export function normalizeFoodClass(foodClass: string): FoodClass {
+  const normalized = foodClass
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  switch (normalized) {
+    case "empty_bowl":
+    case "empty":
+      return "empty_bowl";
+    case "pate_wet_food_bowl":
+    case "pate_wet_food":
+      return "pate_wet_food_bowl";
+    case "stew_wet_food_bowl":
+    case "stew_wet_food":
+      return "stew_wet_food_bowl";
+    case "milk_bowl":
+    case "milk":
+      return "milk_bowl";
+    case "unclear":
+    case "unknown":
+      return "unclear";
+    default:
+      return "unsupported";
+  }
+}
+
+export function getFoodClassDisplayName(foodClass: FoodClass | string) {
   switch (foodClass) {
     case "empty_bowl":
       return "Empty Bowl";
     case "pate_wet_food_bowl":
-      return "Pâté Wet Food";
+      return "Pate Wet Food";
     case "stew_wet_food_bowl":
       return "Stew Wet Food";
     case "milk_bowl":
       return "Milk";
+    case "unclear":
+      return "Unclear";
+    case "unsupported":
+      return "Unsupported Result";
     default:
-      return "Unknown";
+      return "Unclear";
+  }
+}
+
+export function getConfidenceDisplayName(confidence: string) {
+  switch (confidence.toLowerCase()) {
+    case "low":
+      return "Low Confidence";
+    case "medium":
+      return "Medium Confidence";
+    case "high":
+      return "High Confidence";
+    default:
+      return "Confidence unavailable";
   }
 }

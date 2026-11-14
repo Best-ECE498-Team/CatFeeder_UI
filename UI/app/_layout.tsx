@@ -3,6 +3,8 @@ import { Stack } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { Animated, StyleSheet, View } from "react-native";
 
+import { PawPlateProvider } from "../state/PawPlateContext";
+
 const loadingVideo = require("../assets/images/pawplate_loading_screen.mp4");
 
 export default function RootLayout() {
@@ -46,9 +48,11 @@ export default function RootLayout() {
 
   return (
     <View style={styles.container}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <PawPlateProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </PawPlateProvider>
 
       {isLoading ? (
         <Animated.View style={[styles.loadingScreen, { opacity }]}>
@@ -57,7 +61,6 @@ export default function RootLayout() {
             style={styles.loadingVideo}
             contentFit="cover"
             nativeControls={false}
-            allowsFullscreen={false}
           />
         </Animated.View>
       ) : null}
@@ -70,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loadingScreen: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 10,
     backgroundColor: "#fbf7ef",
   },
